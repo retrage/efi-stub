@@ -1,2 +1,5 @@
 *.o
+*.efi
+*.sym
 efi-stub
+tools/build

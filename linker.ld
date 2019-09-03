@@ -5,12 +5,17 @@ SECTIONS
 {
   . = 0x100000;
 
+  /* Header */
+  .header :
+  {
+    KEEP (*(.data.header))
+  }
+
   /* Code */
+  . = ALIGN(0x1000);
   _text = .;
   .text :
   {
-    KEEP (*(.data.boot))
-    . = ALIGN(0x10);
     *(.text)
     *(.text.*)
   }
