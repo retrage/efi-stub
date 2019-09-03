@@ -1,7 +1,7 @@
 #include <Uefi.h>
 #include <GlobalTable.h>
 
-#include "efi.h"
+#include "eficall.h"
 
 EFI_STATUS
 EFIAPI

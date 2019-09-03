@@ -15,15 +15,15 @@ OBJS=$(SRCS:.c=.o) $(ASMS:.s=.o)
 TOOLS=tools/build
 TARGET=efi-stub
 
-all: $(TARGET)
+all: $(TARGET).efi
 
-$(TARGET): $(TARGET).efi $(TARGET).sym $(TOOLS)
-	$(TOOLS) $(TARGET).sym $(TARGET).efi $@
+$(TARGET).efi: $(TARGET).bin $(TARGET).sym $(TOOLS)
+	$(TOOLS) $(TARGET).sym $(TARGET).bin $@
 
 $(TARGET).sym: $(TARGET).o
 	$(NM) -n $< > $@
 
-$(TARGET).efi: $(TARGET).o
+$(TARGET).bin: $(TARGET).o
 	$(OBJCOPY) -O binary $< $@
 
 $(TARGET).o: $(OBJS) $(LDSCRIPT)
@@ -33,6 +33,6 @@ $(TOOLS): $(TOOLS).c
 	$(HOSTCC) $(HOSTCFLAGS) $^ -o $@
 
 clean:
-	@rm -rf $(TOOLS) $(TARGET) *.efi *.o *.sym
+	@rm -rf $(TOOLS) *.bin *.efi *.o *.sym
 
 .PHONY: clean
