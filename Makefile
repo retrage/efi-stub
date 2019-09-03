@@ -1,5 +1,9 @@
 HOSTCC=gcc
-CFLAGS=-Iinclude
+HOSTCFLAGS=-Iinclude
+CFLAGS=-Wall -Werror -mno-red-zone -fno-stack-protector -fshort-wchar \
+	   -Iinclude/edk2/MdePkg/Include \
+	   -Iinclude/edk2/MdePkg/Include/X64 \
+	   -Iinclude
 LDFLAGS=-nostdlib
 NM=nm
 OBJCOPY=objcopy
@@ -26,7 +30,7 @@ $(TARGET).o: $(OBJS) $(LDSCRIPT)
 	$(CC) $(LDFLAGS) -Wl,-dT,$(call strip,$(LDSCRIPT)) $(OBJS) -o $@
 
 $(TOOLS): $(TOOLS).c
-	$(HOSTCC) $(CFLAGS) $^ -o $@
+	$(HOSTCC) $(HOSTCFLAGS) $^ -o $@
 
 clean:
 	@rm -rf $(TOOLS) $(TARGET) *.efi *.o *.sym
