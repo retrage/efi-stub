@@ -13,8 +13,8 @@ TARGET=efi-stub
 
 all: $(TARGET)
 
-$(TARGET): $(TARGET).efi $(TOOLS)
-	$(TOOLS) $(TARGET).efi $@
+$(TARGET): $(TARGET).efi $(TARGET).sym $(TOOLS)
+	$(TOOLS) $(TARGET).sym $(TARGET).efi $@
 
 $(TARGET).sym: $(TARGET).o
 	$(NM) -n $< > $@

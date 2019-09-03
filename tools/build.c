@@ -9,45 +9,138 @@
 
 #include "pe.h"
 
+#define ALIGN_UP(val, align) ((val + align - 1) & ~(align - 1))
+
+const size_t ALIGN = 0x1000;
+const size_t STRSIZE = 1024;
+
+unsigned long long offset;
+unsigned int address_of_entry_point;
+unsigned int size_of_code;
+unsigned int base_of_code;
+unsigned int size_of_image;
+unsigned int text_size;
+unsigned int text_addr;
+unsigned int rodata_size;
+unsigned int rodata_addr;
+unsigned int data_size;
+unsigned int data_addr;
+unsigned int bss_size;
+unsigned int bss_addr;
+
+static void parse_symbol_table(const char *sym_name)
+{
+  FILE *sym_fp = fopen(sym_name, "r");
+  if (!sym_fp) {
+    fprintf(stderr, "Could not open file %s\n", sym_name);
+    return;
+  }
+
+  const char *HEADER = "_hdr";
+  const char *ENTRY = "_entry";
+  const char *TEXT = "_text";
+  const char *ETEXT = "_etext";
+  const char *RODATA = "_rodata";
+  const char *ECTORS = "_ectors";
+  const char *DATA = "_data";
+  const char *EDATA = "_edata";
+  const char *BSS = "__bss_start";
+  const char *END = "_end";
+
+  unsigned int text;
+  unsigned int etext;
+  unsigned int rodata;
+  unsigned int ectors;
+  unsigned int data;
+  unsigned int edata;
+  unsigned int bss;
+  unsigned int end;
+
+  unsigned long long addr;
+  char c;
+  char sym[STRSIZE];
+  while (fscanf(sym_fp, "%llx %c %s", &addr, &c, sym) != EOF) {
+    if (!strncmp(sym, HEADER, IMAGE_SIZEOF_SHORT_NAME)) {
+      offset = addr;
+    } else if (!strncmp(sym, ENTRY, IMAGE_SIZEOF_SHORT_NAME)) {
+      address_of_entry_point = addr - offset;
+    } else if (!strncmp(sym, TEXT, IMAGE_SIZEOF_SHORT_NAME)) {
+      text = addr - offset;
+    } else if (!strncmp(sym, ETEXT, IMAGE_SIZEOF_SHORT_NAME)) {
+      etext = addr - offset;
+    } else if (!strncmp(sym, RODATA, IMAGE_SIZEOF_SHORT_NAME)) {
+      rodata = addr - offset;
+    } else if (!strncmp(sym, ECTORS, IMAGE_SIZEOF_SHORT_NAME)) {
+      ectors = addr - offset;
+    } else if (!strncmp(sym, DATA, IMAGE_SIZEOF_SHORT_NAME)) {
+      data = addr - offset;
+    } else if (!strncmp(sym, EDATA, IMAGE_SIZEOF_SHORT_NAME)) {
+      edata = addr - offset;
+    } else if (!strncmp(sym, BSS, IMAGE_SIZEOF_SHORT_NAME)) {
+      bss = addr - offset;
+    } else if (!strncmp(sym, END, IMAGE_SIZEOF_SHORT_NAME)) {
+      end = addr - offset;
+    }
+   }
+
+  base_of_code = text;
+  size_of_code = etext - text;
+  size_of_image = end;
+
+  text_size = ALIGN_UP(size_of_code, ALIGN);
+  text_addr = text;
+  rodata_size = ALIGN_UP(ectors - rodata, ALIGN);
+  rodata_addr = rodata;
+  data_size = ALIGN_UP(edata - data, ALIGN);
+  data_addr = data;
+  bss_size = ALIGN_UP(end - bss, ALIGN);
+  bss_addr = bss;
+
+  fclose(sym_fp);
+}
+
 int main(int argc, char *argv[])
 {
-  if (argc < 3) {
-    fprintf(stderr, "Usage: %s INPUT OUTPUT\n", argv[0]);
+  if (argc < 4) {
+    fprintf(stderr, "Usage: %s SymbolTable INPUT OUTPUT\n", argv[0]);
+    return 1;
+  }
+
+  parse_symbol_table(argv[1]);
+
+  char bin_name[STRSIZE];
+  strncpy(bin_name, argv[2], STRSIZE);
+  int bin_fd = open(bin_name, O_RDONLY);
+  if (bin_fd == -1) {
+    fprintf(stderr, "Could not open file %s\n", bin_name);
     goto fail;
   }
 
-  int fd = open(argv[1], O_RDONLY);
-  if (fd == -1) {
-    fprintf(stderr, "Could not open file %s\n", argv[1]);
+  FILE *bin_fp = fdopen(bin_fd, "rb");
+  if (!bin_fp) {
+    fprintf(stderr, "Could not open file %s\n", bin_name);
     goto fail;
   }
 
-  FILE *fp = fdopen(fd, "rb");
-  if (!fp) {
-    fprintf(stderr, "Could not open file %s\n", argv[1]);
-    goto fail;
-  }
-
-  struct stat st;
-  if (fstat(fd, &st) == -1) {
+  struct stat bin_st;
+  if (fstat(bin_fd, &bin_st) == -1) {
     fprintf(stderr, "fstat failed\n");
     goto fail;
   }
 
-  size_t sz = st.st_size;
-  void *buf = malloc(sz);
-  if (!buf) {
+  size_t bin_size = bin_st.st_size;
+  void *bin_buf = malloc(bin_size);
+  if (!bin_buf) {
     fprintf(stderr, "Could not allocate memory\n");
     goto fail;
   }
 
-  if (fread(buf, 1, sz, fp) != sz) {
+  if (fread(bin_buf, 1, bin_size, bin_fp) != bin_size) {
     fprintf(stderr, "Cound not read file\n");
     goto fail;
   }
 
-  const size_t peoffset = 0;
-  IMAGE_DOS_HEADER *doshdr = (IMAGE_DOS_HEADER *)(buf + peoffset);
+  IMAGE_DOS_HEADER *doshdr = (IMAGE_DOS_HEADER *)bin_buf;
   if (doshdr->e_magic != MAGIC_MZ) {
     fprintf(stderr, "DOS header magic not found\n");
     goto fail;
@@ -63,60 +156,55 @@ int main(int argc, char *argv[])
   IMAGE_FILE_HEADER *fhdr = &nthdr->FileHeader;
   IMAGE_OPTIONAL_HEADER *opthdr = &nthdr->OptionalHeader;
 
-  const unsigned int entry_addr = 0x1010;
-  opthdr->AddressOfEntryPoint = entry_addr;
-  opthdr->SizeOfCode = 0x1c;
-  opthdr->BaseOfCode = 0x1000;
-  opthdr->SizeOfImage = 0x5000;
+  opthdr->AddressOfEntryPoint = address_of_entry_point;
+  opthdr->SizeOfCode = size_of_code;
+  opthdr->BaseOfCode = base_of_code;
+  opthdr->SizeOfImage = size_of_image;
 
   for (int i = 0; i < fhdr->NumberOfSections; i++) {
     IMAGE_SECTION_HEADER *sechdr \
       = ((void *)nthdr + sizeof(IMAGE_NT_HEADERS)
           + sizeof(IMAGE_SECTION_HEADER) * i);
     if (!strncmp(sechdr->Name, ".text", 8)) {
-      sechdr->Misc.VirtualSize = 0x1000;
-      sechdr->VirtualAddress = 0x1000;
-      sechdr->SizeOfRawData = 0x1000;
-      sechdr->PointerToRawData = 0x1000;
-      sechdr->Characteristics = 0x60500020; /* r-x exec */
+      sechdr->Misc.VirtualSize = text_size;
+      sechdr->VirtualAddress = text_addr;
+      sechdr->SizeOfRawData = text_size;
+      sechdr->PointerToRawData = text_addr;
     } else if (!strncmp(sechdr->Name, ".rodata", 8)) {
-      sechdr->Misc.VirtualSize = 0x1000;
-      sechdr->VirtualAddress = 0x2000;
-      sechdr->SizeOfRawData = 0x1000;
-      sechdr->PointerToRawData = 0x2000;
-      sechdr->Characteristics = 0x42100040; /* r-- inited */
+      sechdr->Misc.VirtualSize = rodata_size;
+      sechdr->VirtualAddress = rodata_addr;
+      sechdr->SizeOfRawData = rodata_size;
+      sechdr->PointerToRawData = rodata_addr;
     } else if (!strncmp(sechdr->Name, ".data", 8)) {
-      sechdr->Misc.VirtualSize = 0x1000;
-      sechdr->VirtualAddress = 0x3000;
-      sechdr->SizeOfRawData = 0x1000;
-      sechdr->PointerToRawData = 0x3000;
-      sechdr->Characteristics = 0xc8000080; /* rw- uninited */
+      sechdr->Misc.VirtualSize = data_size;
+      sechdr->VirtualAddress = data_addr;
+      sechdr->SizeOfRawData = data_size;
+      sechdr->PointerToRawData = data_addr;
     } else if (!strncmp(sechdr->Name, ".bss", 8)) {
-      sechdr->Misc.VirtualSize = 0x1000;
-      sechdr->VirtualAddress = 0x4000;
-      sechdr->SizeOfRawData = 0x1000;
-      sechdr->PointerToRawData = 0x4000;
-      sechdr->Characteristics = 0xc8000080; /* rw- uninited */
+      sechdr->Misc.VirtualSize = bss_size;
+      sechdr->VirtualAddress = bss_addr;
+      sechdr->SizeOfRawData = bss_size;
+      sechdr->PointerToRawData = bss_addr;
     }
   }
 
-  void *wbuf = malloc(peoffset + 0x5000);
-  memset(wbuf, 0, peoffset + 0x5000);
-  memcpy(wbuf, buf, peoffset + 0x5000);
+  void *wbuf = malloc(size_of_image);
+  memset(wbuf, 0, size_of_image);
+  memcpy(wbuf, bin_buf, size_of_image);
 
-  FILE *wfp = fopen(argv[2], "wb");
-  fwrite(wbuf, peoffset + 0x5000, 1, wfp);
+  FILE *wfp = fopen(argv[3], "wb");
+  fwrite(wbuf, size_of_image, 1, wfp);
   fclose(wfp);
 
   return 0;
 
 fail:
-  if (buf)
-    free(buf);
-  if (fp)
-    fclose(fp);
-  if (fd != -1)
-    close(fd);
+  if (bin_buf)
+    free(bin_buf);
+  if (bin_fp)
+    fclose(bin_fp);
+  if (bin_fd != -1)
+    close(bin_fd);
 
   return 1;
 }
