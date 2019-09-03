@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: MIT */
 
 .global efi_call1
 .global efi_call2

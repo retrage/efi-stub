@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+
 #ifndef EFICALL_H_
 #define EFICALL_H_
 

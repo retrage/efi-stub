@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 HOSTCC=gcc
 HOSTCFLAGS=-Iinclude
 CFLAGS=-Wall -Werror -mno-red-zone -fno-stack-protector -fshort-wchar \

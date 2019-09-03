@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+
 .section .data.header
 
 _hdr:
