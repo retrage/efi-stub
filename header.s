@@ -22,7 +22,7 @@ file_header:
 .long 0x00000000                        /* PointerToSymbolTable */
 .long 0x00000000                        /* NumberOfSymbols */
 .word section_header - optional_header  /* SizeOfOptionalHeader */
-.word 0x0206                            /* Characteristics */
+.word 0x0002                            /* Characteristics */
 
 /* Optional Header */
 optional_header:
