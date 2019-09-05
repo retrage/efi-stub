@@ -161,26 +161,31 @@ int main(int argc, char *argv[])
   opthdr->BaseOfCode = base_of_code;
   opthdr->SizeOfImage = size_of_image;
 
+  const char *TEXT = ".text";
+  const char *RODATA = ".rodata";
+  const char *DATA = ".data";
+  const char *BSS = ".bss";
+
   for (int i = 0; i < fhdr->NumberOfSections; i++) {
     IMAGE_SECTION_HEADER *sechdr \
       = ((void *)nthdr + sizeof(IMAGE_NT_HEADERS)
           + sizeof(IMAGE_SECTION_HEADER) * i);
-    if (!strncmp(sechdr->Name, ".text", 8)) {
+    if (!strncmp(sechdr->Name, TEXT, IMAGE_SIZEOF_SHORT_NAME)) {
       sechdr->Misc.VirtualSize = text_size;
       sechdr->VirtualAddress = text_addr;
       sechdr->SizeOfRawData = text_size;
       sechdr->PointerToRawData = text_addr;
-    } else if (!strncmp(sechdr->Name, ".rodata", 8)) {
+    } else if (!strncmp(sechdr->Name, RODATA, IMAGE_SIZEOF_SHORT_NAME)) {
       sechdr->Misc.VirtualSize = rodata_size;
       sechdr->VirtualAddress = rodata_addr;
       sechdr->SizeOfRawData = rodata_size;
       sechdr->PointerToRawData = rodata_addr;
-    } else if (!strncmp(sechdr->Name, ".data", 8)) {
+    } else if (!strncmp(sechdr->Name, DATA, IMAGE_SIZEOF_SHORT_NAME)) {
       sechdr->Misc.VirtualSize = data_size;
       sechdr->VirtualAddress = data_addr;
       sechdr->SizeOfRawData = data_size;
       sechdr->PointerToRawData = data_addr;
-    } else if (!strncmp(sechdr->Name, ".bss", 8)) {
+    } else if (!strncmp(sechdr->Name, BSS, IMAGE_SIZEOF_SHORT_NAME)) {
       sechdr->Misc.VirtualSize = bss_size;
       sechdr->VirtualAddress = bss_addr;
       sechdr->SizeOfRawData = bss_size;

@@ -60,22 +60,22 @@ optional_header:
 
 /* Section Header */
 section_header:
-.ascii ".text\0\0\0"
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
+.ascii ".text\0\0\0"                    /* Name */
+.long 0x00000000                        /* FILLED: VirtualSize */
+.long 0x00000000                        /* FILLED: VirtualAddress */
+.long 0x00000000                        /* FILLED: SizeOfRawData */
+.long 0x00000000                        /* FILLED: PointerToRawData */
 .long 0x00000000
 .long 0x00000000
 .word 0x0000
 .word 0x0000
-.long 0x60500020 /* r-x exec */
+.long 0x60500020 /* r-x exec */         /* Characteristics */
 
 .ascii ".rodata\0"
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
+.long 0x00000000                        /* FILLED: VirtualSize */
+.long 0x00000000                        /* FILLED: VirtualAddress */
+.long 0x00000000                        /* FILLED: SizeOfRawData */
+.long 0x00000000                        /* FILLED: PointerToRawData */
 .long 0x00000000
 .long 0x00000000
 .word 0x0000
@@ -83,10 +83,10 @@ section_header:
 .long 0x42100040 /* r-- inited */
 
 .ascii ".data\0\0\0"
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
+.long 0x00000000                        /* FILLED: VirtualSize */
+.long 0x00000000                        /* FILLED: VirtualAddress */
+.long 0x00000000                        /* FILLED: SizeOfRawData */
+.long 0x00000000                        /* FILLED: PointerToRawData */
 .long 0x00000000
 .long 0x00000000
 .word 0x0000
@@ -94,10 +94,10 @@ section_header:
 .long 0xc8000080 /* rw- uninited */
 
 .ascii ".bss\0\0\0\0"
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
+.long 0x00000000                        /* FILLED: VirtualSize */
+.long 0x00000000                        /* FILLED: VirtualAddress */
+.long 0x00000000                        /* FILLED: SizeOfRawData */
+.long 0x00000000                        /* FILLED: PointerToRawData */
 .long 0x00000000
 .long 0x00000000
 .word 0x0000
