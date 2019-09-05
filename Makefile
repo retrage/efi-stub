@@ -2,6 +2,7 @@
 
 HOSTCC=gcc
 HOSTCFLAGS=-Iinclude
+CC=gcc
 CFLAGS=-Wall -Werror -mno-red-zone -fno-stack-protector -fshort-wchar \
 	   -Iinclude/edk2/MdePkg/Include \
 	   -Iinclude/edk2/MdePkg/Include/X64 \
