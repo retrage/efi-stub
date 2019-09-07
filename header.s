@@ -104,6 +104,4 @@ section_header:
 .word 0x0000
 .long 0xc8000040 /* rw- inited */
 
-.align 0x1000 /* Adjust to FileAlignment */
-
 _ehdr:
