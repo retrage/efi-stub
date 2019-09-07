@@ -60,25 +60,25 @@ static void parse_symbol_table(const char *sym_name)
   char c;
   char sym[STRSIZE];
   while (fscanf(sym_fp, "%llx %c %s", &addr, &c, sym) != EOF) {
-    if (!strncmp(sym, HEADER, IMAGE_SIZEOF_SHORT_NAME)) {
+    if (!strncmp(sym, HEADER, STRSIZE)) {
       offset = addr;
-    } else if (!strncmp(sym, ENTRY, IMAGE_SIZEOF_SHORT_NAME)) {
+    } else if (!strncmp(sym, ENTRY, STRSIZE)) {
       address_of_entry_point = addr - offset;
-    } else if (!strncmp(sym, TEXT, IMAGE_SIZEOF_SHORT_NAME)) {
+    } else if (!strncmp(sym, TEXT, STRSIZE)) {
       text = addr - offset;
-    } else if (!strncmp(sym, ETEXT, IMAGE_SIZEOF_SHORT_NAME)) {
+    } else if (!strncmp(sym, ETEXT, STRSIZE)) {
       etext = addr - offset;
-    } else if (!strncmp(sym, RODATA, IMAGE_SIZEOF_SHORT_NAME)) {
+    } else if (!strncmp(sym, RODATA, STRSIZE)) {
       rodata = addr - offset;
-    } else if (!strncmp(sym, ECTORS, IMAGE_SIZEOF_SHORT_NAME)) {
+    } else if (!strncmp(sym, ECTORS, STRSIZE)) {
       ectors = addr - offset;
-    } else if (!strncmp(sym, DATA, IMAGE_SIZEOF_SHORT_NAME)) {
+    } else if (!strncmp(sym, DATA, STRSIZE)) {
       data = addr - offset;
-    } else if (!strncmp(sym, EDATA, IMAGE_SIZEOF_SHORT_NAME)) {
+    } else if (!strncmp(sym, EDATA, STRSIZE)) {
       edata = addr - offset;
-    } else if (!strncmp(sym, BSS, IMAGE_SIZEOF_SHORT_NAME)) {
+    } else if (!strncmp(sym, BSS, STRSIZE)) {
       bss = addr - offset;
-    } else if (!strncmp(sym, END, IMAGE_SIZEOF_SHORT_NAME)) {
+    } else if (!strncmp(sym, END, STRSIZE)) {
       end = addr - offset;
     }
    }
