@@ -69,7 +69,7 @@ section_header:
 .long 0x00000000
 .word 0x0000
 .word 0x0000
-.long 0x60500020 /* r-x exec */         /* Characteristics */
+.long 0x60000020 /* r-x exec */         /* Characteristics */
 
 .ascii ".rodata\0"
 .long 0x00000000                        /* FILLED: VirtualSize */
@@ -80,7 +80,7 @@ section_header:
 .long 0x00000000
 .word 0x0000
 .word 0x0000
-.long 0x42100040 /* r-- inited */
+.long 0x42000040 /* r-- inited */
 
 .ascii ".data\0\0\0"
 .long 0x00000000                        /* FILLED: VirtualSize */
