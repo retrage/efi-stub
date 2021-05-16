@@ -3,10 +3,13 @@
 #include "utils.h"
 
 #include <Uefi.h>
-#include <GlobalTable.h>
 
 #include "eficall.h"
 #include "printf.h"
+
+extern EFI_SYSTEM_TABLE *gST;
+extern EFI_BOOT_SERVICES *gBS;
+extern EFI_HANDLE gImageHandle;
 
 const unsigned int BUFSIZE = 1024;
 
